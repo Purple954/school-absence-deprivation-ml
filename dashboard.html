@@ -3,287 +3,312 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>School Absence & Deprivation — ML Dashboard</title>
+<title>School Absence & Deprivation — Analysis</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
+  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Source+Serif+4:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Inter:wght@400;500;600&display=swap');
+
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f0f2f5; color: #1a1a2e; }
 
-  header {
-    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 60%, #0f3460 100%);
-    color: #fff; padding: 48px 40px 40px;
+  body {
+    background: #FFFDF8;
+    color: #1C1C1C;
+    font-family: 'Source Serif 4', Georgia, serif;
+    font-weight: 300;
+    line-height: 1.8;
   }
-  header .tag { display: inline-block; background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3); color: #a8d8ff; font-size: 11px; font-weight: 600; letter-spacing: 1.2px; text-transform: uppercase; padding: 4px 12px; border-radius: 20px; margin-bottom: 16px; }
-  header h1 { font-size: 28px; font-weight: 700; line-height: 1.3; max-width: 700px; margin-bottom: 12px; }
-  header p { color: rgba(255,255,255,0.7); font-size: 15px; max-width: 680px; line-height: 1.6; }
 
-  .container { max-width: 1200px; margin: 0 auto; padding: 36px 24px 60px; }
+  /* TOP BAR */
+  .topbar {
+    border-bottom: 3px solid #1C1C1C;
+    padding: 12px 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .topbar-inner { max-width: 1100px; margin: 0 auto; padding: 0 32px; display: flex; justify-content: space-between; align-items: center; width: 100%; }
+  .topbar .section-label { font-family: 'Inter', sans-serif; font-size: 11px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; color: #1C1C1C; }
+  .topbar .date { font-family: 'Inter', sans-serif; font-size: 11px; color: #888; }
 
-  .metrics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 36px; }
-  .metric-card { background: #fff; border-radius: 12px; padding: 24px 20px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
-  .metric-card .label { font-size: 11px; font-weight: 600; letter-spacing: 0.8px; text-transform: uppercase; color: #888; margin-bottom: 8px; }
-  .metric-card .value { font-size: 32px; font-weight: 700; color: #0f3460; line-height: 1; margin-bottom: 4px; }
-  .metric-card .sub { font-size: 12px; color: #888; }
-  .metric-card.highlight .value { color: #e63946; }
-  .metric-card.green .value { color: #2a9d8f; }
+  /* HEADER */
+  header { max-width: 780px; margin: 0 auto; padding: 56px 32px 40px; border-bottom: 1px solid #ddd; }
+  .kicker { font-family: 'Inter', sans-serif; font-size: 11px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; color: #1a5276; margin-bottom: 20px; }
+  h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(32px, 5vw, 52px);
+    font-weight: 900;
+    line-height: 1.1;
+    color: #1C1C1C;
+    margin-bottom: 20px;
+  }
+  .deck {
+    font-family: 'Source Serif 4', serif;
+    font-size: 19px;
+    font-weight: 300;
+    font-style: italic;
+    color: #444;
+    line-height: 1.6;
+    margin-bottom: 28px;
+  }
+  .byline { font-family: 'Inter', sans-serif; font-size: 12px; color: #888; border-top: 1px solid #eee; padding-top: 16px; }
+  .byline span { color: #1C1C1C; font-weight: 600; }
 
-  .section { margin-bottom: 36px; }
-  .section-title { font-size: 13px; font-weight: 700; letter-spacing: 0.8px; text-transform: uppercase; color: #555; margin-bottom: 16px; padding-bottom: 8px; border-bottom: 2px solid #e8eaed; }
+  /* BODY */
+  .body-wrap { max-width: 780px; margin: 0 auto; padding: 0 32px; }
 
-  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
-  @media (max-width: 900px) { .grid-2, .grid-3 { grid-template-columns: 1fr; } }
+  /* FULL WIDTH (for charts) */
+  .full-wrap { max-width: 1100px; margin: 0 auto; padding: 0 32px; }
 
-  .card { background: #fff; border-radius: 12px; padding: 24px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
-  .card h3 { font-size: 14px; font-weight: 600; color: #333; margin-bottom: 16px; }
-  .chart-wrap { position: relative; height: 280px; }
+  p { margin-bottom: 20px; font-size: 17px; color: #2a2a2a; }
 
-  .findings-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
-  .finding { background: #fff; border-radius: 12px; padding: 20px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); border-left: 4px solid #0f3460; }
-  .finding.amber { border-left-color: #e9c46a; }
-  .finding.green { border-left-color: #2a9d8f; }
-  .finding.red { border-left-color: #e63946; }
-  .finding h4 { font-size: 13px; font-weight: 700; color: #333; margin-bottom: 8px; }
-  .finding p { font-size: 13px; color: #555; line-height: 1.6; }
+  /* PULL STAT */
+  .pull-stat {
+    border-left: 4px solid #1a5276;
+    padding: 24px 28px;
+    margin: 36px 0;
+    background: #f4f8fc;
+  }
+  .pull-stat .number { font-family: 'Playfair Display', serif; font-size: 56px; font-weight: 900; color: #1a5276; line-height: 1; }
+  .pull-stat .number-label { font-family: 'Inter', sans-serif; font-size: 13px; color: #555; margin-top: 8px; line-height: 1.5; }
 
-  .img-card { background: #fff; border-radius: 12px; overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
-  .img-card h3 { font-size: 14px; font-weight: 600; color: #333; padding: 16px 20px 0; margin-bottom: 12px; }
-  .img-card img { width: 100%; display: block; }
+  /* SECTION HEADER */
+  .section-head {
+    font-family: 'Inter', sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: #888;
+    border-top: 1px solid #ddd;
+    padding-top: 32px;
+    margin: 48px 0 24px;
+  }
 
-  table { width: 100%; border-collapse: collapse; font-size: 13px; }
-  th { background: #f8f9fa; font-weight: 600; color: #555; text-align: left; padding: 10px 12px; border-bottom: 2px solid #e8eaed; }
-  td { padding: 9px 12px; border-bottom: 1px solid #f0f0f0; color: #333; }
+  h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 26px;
+    font-weight: 700;
+    color: #1C1C1C;
+    margin-bottom: 16px;
+    line-height: 1.3;
+  }
+
+  h3 {
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    color: #555;
+    margin-bottom: 16px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  /* CHART AREA */
+  .chart-row { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; margin: 36px 0; }
+  @media (max-width: 800px) { .chart-row { grid-template-columns: 1fr; } }
+  .chart-block { }
+  .chart-block canvas { width: 100% !important; }
+  .chart-caption { font-family: 'Inter', sans-serif; font-size: 11px; color: #999; margin-top: 10px; border-top: 1px solid #eee; padding-top: 8px; }
+
+  /* FIGURES */
+  .figure-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; margin: 36px 0; }
+  @media (max-width: 800px) { .figure-grid { grid-template-columns: 1fr; } }
+  .figure-block img { width: 100%; display: block; border: 1px solid #eee; }
+  .figure-block figcaption { font-family: 'Inter', sans-serif; font-size: 11px; color: #999; margin-top: 8px; }
+
+  /* TABLE */
+  table { width: 100%; border-collapse: collapse; font-size: 14px; font-family: 'Inter', sans-serif; margin: 24px 0; }
+  th { font-weight: 600; text-align: left; padding: 8px 12px; border-bottom: 2px solid #1C1C1C; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; }
+  td { padding: 10px 12px; border-bottom: 1px solid #eee; color: #333; }
   tr:last-child td { border-bottom: none; }
-  .badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; }
-  .badge-blue { background: #e8f4fd; color: #0f3460; }
-  .badge-green { background: #e8f8f5; color: #2a9d8f; }
 
-  footer { text-align: center; font-size: 12px; color: #aaa; padding: 24px; }
+  /* BLOCKQUOTE FINDING */
+  blockquote {
+    font-family: 'Playfair Display', serif;
+    font-size: 22px;
+    font-style: italic;
+    color: #1a5276;
+    border-top: 3px solid #1a5276;
+    border-bottom: 1px solid #ddd;
+    padding: 20px 0;
+    margin: 36px 0;
+    line-height: 1.5;
+  }
+
+  /* FINDINGS LIST */
+  .findings { list-style: none; }
+  .findings li { padding: 20px 0; border-bottom: 1px solid #eee; font-size: 17px; padding-left: 20px; position: relative; }
+  .findings li::before { content: '—'; position: absolute; left: 0; color: #1a5276; font-weight: 700; }
+  .findings li strong { color: #1C1C1C; font-weight: 600; }
+
+  footer { border-top: 1px solid #ddd; margin-top: 64px; padding: 28px 32px; max-width: 1100px; margin-left: auto; margin-right: auto; }
+  footer p { font-family: 'Inter', sans-serif; font-size: 11px; color: #aaa; margin: 0; line-height: 1.7; }
 </style>
 </head>
 <body>
 
+<div class="topbar">
+  <div class="topbar-inner">
+    <span class="section-label">Education · Machine Learning</span>
+    <span class="date">England, 2018–2024</span>
+  </div>
+</div>
+
 <header>
-  <div class="tag">Machine Learning · Education · England</div>
-  <h1>School Absence &amp; Neighbourhood Deprivation</h1>
-  <p>Can neighbourhood deprivation, school characteristics, regional factors, and time predict persistent absenteeism rates in English state schools? A Random Forest panel analysis across 2018–2024.</p>
+  <div class="kicker">Data Analysis</div>
+  <h1>Poverty, not place, predicts which children miss school</h1>
+  <p class="deck">A four-year machine learning analysis of persistent absence in English state schools finds that Free School Meals eligibility — a direct measure of pupil poverty — outperforms area deprivation as a predictor by a factor of nineteen to one.</p>
+  <div class="byline">Data: <span>DfE Absence Statistics · GIAS · IMD 2019 · ONS Postcode Directory</span> &nbsp;·&nbsp; Method: <span>Random Forest · SHAP · Spatial GroupKFold CV</span></div>
 </header>
 
-<div class="container">
+<div class="body-wrap">
 
-  <!-- Key metrics -->
-  <div class="metrics-grid" style="margin-top:0">
-    <div class="metric-card">
-      <div class="label">RF Test R²</div>
-      <div class="value">0.597</div>
-      <div class="sub">Panel 2018–24 · school-level split</div>
-    </div>
-    <div class="metric-card green">
-      <div class="label">RF Test RMSE</div>
-      <div class="value">5.71</div>
-      <div class="sub">% persistent absence</div>
-    </div>
-    <div class="metric-card">
-      <div class="label">OLS Baseline R²</div>
-      <div class="value">0.486</div>
-      <div class="sub">RMSE 6.45</div>
-    </div>
-    <div class="metric-card highlight">
-      <div class="label">Spatial CV RMSE</div>
-      <div class="value">5.60</div>
-      <div class="sub">±0.047 · 9-fold geographic</div>
-    </div>
-    <div class="metric-card">
-      <div class="label">Top Feature</div>
-      <div class="value">39.7%</div>
-      <div class="sub">Free School Meals importance</div>
-    </div>
-    <div class="metric-card">
-      <div class="label">Panel Size</div>
-      <div class="value">~79k</div>
-      <div class="sub">school-year rows · 4 years</div>
-    </div>
-  </div>
+  <div class="section-head">The finding</div>
+  <h2>The COVID attendance crisis hit every school equally — regardless of how deprived their neighbourhood was</h2>
 
-  <!-- Charts row -->
-  <div class="section">
-    <div class="section-title">Model Performance &amp; Feature Importances</div>
-    <div class="grid-2">
-      <div class="card">
-        <h3>Feature Importances (Random Forest)</h3>
-        <div class="chart-wrap">
-          <canvas id="featChart"></canvas>
-        </div>
-      </div>
-      <div class="card">
-        <h3>RF vs OLS Baseline — R² &amp; RMSE</h3>
-        <div class="chart-wrap">
-          <canvas id="modelChart"></canvas>
-        </div>
-      </div>
-    </div>
-  </div>
+  <p>Persistent absence — missing at least 10% of possible school sessions — has long been treated as a proxy for disadvantage. The assumption is that it clusters in deprived areas, and that area-level interventions can reach the pupils most at risk. This analysis, covering roughly 79,000 school-year observations across four academic years, tests that assumption directly.</p>
 
-  <!-- SHAP figures -->
-  <div class="section">
-    <div class="section-title">SHAP Explainability</div>
-    <div class="grid-2">
-      <div class="img-card">
-        <h3>SHAP Summary — Mean |SHAP| by Feature</h3>
-        <img src="./outputs/figures/shap_summary_bar.png" alt="SHAP summary bar">
-      </div>
-      <div class="img-card">
-        <h3>SHAP Beeswarm — Direction &amp; Distribution</h3>
-        <img src="./outputs/figures/shap_beeswarm.png" alt="SHAP beeswarm">
-      </div>
-    </div>
-  </div>
+  <p>The model finds something more precise. Free School Meals eligibility, an individual-level flag already held by every local authority and school, is nineteen times more predictive of absence rates than the Index of Multiple Deprivation score of the area a school sits in. Area deprivation is real, but it is a blunt instrument.</p>
 
-  <div class="section">
-    <div class="section-title">SHAP Dependence Plots — Top Features</div>
-    <div class="grid-3">
-      <div class="img-card">
-        <h3>% Free School Meals</h3>
-        <img src="./outputs/figures/shap_dependence_percent_fsm.png" alt="FSM dependence">
-      </div>
-      <div class="img-card">
-        <h3>Year (COVID effect)</h3>
-        <img src="./outputs/figures/shap_dependence_year_numeric.png" alt="Year dependence">
-      </div>
-      <div class="img-card">
-        <h3>School Phase</h3>
-        <img src="./outputs/figures/shap_dependence_phase_numeric.png" alt="Phase dependence">
-      </div>
-      <div class="img-card">
-        <h3>School Size (log pupils)</h3>
-        <img src="./outputs/figures/shap_dependence_log_pupils.png" alt="Size dependence">
-      </div>
-      <div class="img-card">
-        <h3>IMD Score (area deprivation)</h3>
-        <img src="./outputs/figures/shap_dependence_imd_score.png" alt="IMD dependence">
-      </div>
-      <div class="img-card">
-        <h3>Region — London</h3>
-        <img src="./outputs/figures/shap_dependence_region_London.png" alt="London region dependence">
-      </div>
-    </div>
-  </div>
+  <blockquote>"The COVID attendance shock was not disproportionately concentrated in deprived schools. It was uniform across the deprivation distribution."</blockquote>
 
-  <!-- Feature importance table -->
-  <div class="section">
-    <div class="section-title">Full Feature Importance Table</div>
-    <div class="card">
-      <table>
-        <thead><tr><th>Feature</th><th>Importance</th><th>Share</th></tr></thead>
-        <tbody>
-          <tr><td>percent_fsm</td><td>0.397</td><td><span class="badge badge-blue">39.7%</span></td></tr>
-          <tr><td>year_numeric</td><td>0.298</td><td><span class="badge badge-blue">29.8%</span></td></tr>
-          <tr><td>phase_numeric</td><td>0.209</td><td><span class="badge badge-blue">20.9%</span></td></tr>
-          <tr><td>log_pupils</td><td>0.044</td><td><span class="badge badge-green">4.4%</span></td></tr>
-          <tr><td>imd_score</td><td>0.021</td><td><span class="badge badge-green">2.1%</span></td></tr>
-          <tr><td>region_London</td><td>0.013</td><td><span class="badge badge-green">1.3%</span></td></tr>
-          <tr><td>region_South West</td><td>0.004</td><td>0.4%</td></tr>
-          <tr><td>region_East of England</td><td>0.003</td><td>0.3%</td></tr>
-          <tr><td>region_South East</td><td>0.002</td><td>0.2%</td></tr>
-          <tr><td>region_North West</td><td>0.002</td><td>0.2%</td></tr>
-          <tr><td>region_West Midlands</td><td>0.002</td><td>0.2%</td></tr>
-          <tr><td>is_urban</td><td>0.002</td><td>0.2%</td></tr>
-          <tr><td>imd_quintile</td><td>0.001</td><td>0.1%</td></tr>
-          <tr><td>region_North East</td><td>0.001</td><td>0.1%</td></tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-
-  <!-- Key findings -->
-  <div class="section">
-    <div class="section-title">Key Findings</div>
-    <div class="findings-grid">
-      <div class="finding red">
-        <h4>FSM is the dominant predictor</h4>
-        <p>Free School Meals eligibility accounts for 39.7% of total feature importance — the sharpest available signal of pupil-level poverty. Individual targeting via FSM outperforms area-level IMD as an intervention criterion.</p>
-      </div>
-      <div class="finding amber">
-        <h4>Year captures the COVID attendance shock</h4>
-        <p>Year_numeric (29.8%) reflects the post-pandemic absence surge. SHAP values show a sharp structural break: 2018-19 schools receive large negative contributions while 2021-22 is the peak. By 2023-24 absence is declining but still above pre-pandemic levels.</p>
-      </div>
-      <div class="finding green">
-        <h4>COVID shock was deprivation-neutral</h4>
-        <p>IMD colour coding on the year dependence plot shows the COVID attendance shock was uniform across the deprivation distribution — not disproportionately concentrated in deprived schools. Universal programmes would have been more efficient than area-targeted ones.</p>
-      </div>
-      <div class="finding">
-        <h4>Secondary schools have structurally higher absence</h4>
-        <p>Phase_numeric (20.9%) captures that secondary schools have substantially higher persistent absence than primaries, independent of deprivation and time. This reflects a developmental pattern that interventions must account for separately.</p>
-      </div>
-      <div class="finding">
-        <h4>Area deprivation weaker than expected</h4>
-        <p>IMD score ranks fifth with just 2.1% importance. Area-level deprivation alone is a poor targeting criterion; the FSM eligibility flag is more precise and already available as an administrative data field.</p>
-      </div>
-      <div class="finding amber">
-        <h4>RF outperforms OLS on non-linear interactions</h4>
-        <p>The Random Forest (R² 0.597) beats OLS (R² 0.486) because the panel's temporal structure introduces non-linear interactions — particularly year × phase — that linear regression cannot capture.</p>
-      </div>
-    </div>
-  </div>
+  <p>The second major finding concerns time. The year a school year falls in is the second strongest predictor in the model — not because school years inherently differ, but because the COVID-19 pandemic caused a structural break in attendance norms that is still visible in 2023–24 data. And when the SHAP dependence plots are coloured by deprivation level, the shock is flat across that spectrum. The pandemic was an equal-opportunity disruptor.</p>
 
 </div>
 
-<footer>Data: DfE Absence Statistics · GIAS · IMD 2019 · ONS Postcode Directory &nbsp;|&nbsp; Analysis: scikit-learn, SHAP</footer>
+<!-- PULL STATS — full width feel, still constrained -->
+<div class="body-wrap">
+  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0;border-top:1px solid #ddd;border-bottom:1px solid #ddd;margin:40px 0;">
+    <div style="padding:28px 24px;border-right:1px solid #ddd;">
+      <div style="font-family:'Playfair Display',serif;font-size:48px;font-weight:900;color:#1a5276;line-height:1;">39.7%</div>
+      <div style="font-family:'Inter',sans-serif;font-size:12px;color:#666;margin-top:8px;line-height:1.5;">of model explanatory power comes from<br>Free School Meals eligibility alone</div>
+    </div>
+    <div style="padding:28px 24px;border-right:1px solid #ddd;">
+      <div style="font-family:'Playfair Display',serif;font-size:48px;font-weight:900;color:#1a5276;line-height:1;">0.597</div>
+      <div style="font-family:'Inter',sans-serif;font-size:12px;color:#666;margin-top:8px;line-height:1.5;">Test R² for Random Forest<br>vs 0.486 for OLS baseline</div>
+    </div>
+    <div style="padding:28px 24px;">
+      <div style="font-family:'Playfair Display',serif;font-size:48px;font-weight:900;color:#1a5276;line-height:1;">2.1%</div>
+      <div style="font-family:'Inter',sans-serif;font-size:12px;color:#666;margin-top:8px;line-height:1.5;">of model explanatory power from<br>area-level IMD score</div>
+    </div>
+  </div>
+</div>
+
+<!-- CHARTS -->
+<div class="full-wrap">
+  <div class="section-head">The model</div>
+  <div class="chart-row">
+    <div class="chart-block">
+      <h3>What drives absence — feature importances</h3>
+      <canvas id="featChart" height="260"></canvas>
+      <p class="chart-caption">Random Forest feature importances. Scores sum to 1. Model trained on ~79,000 school-year observations, split by school URN to prevent leakage.</p>
+    </div>
+    <div class="chart-block">
+      <h3>Random Forest vs OLS baseline</h3>
+      <canvas id="modelChart" height="260"></canvas>
+      <p class="chart-caption">Test set performance. RF trained with GridSearchCV (n_estimators=300, max_depth=10). OLS baseline uses same feature set.</p>
+    </div>
+  </div>
+</div>
+
+<!-- SHAP FIGURES -->
+<div class="full-wrap">
+  <div class="section-head">Explainability — SHAP values</div>
+  <div class="figure-grid">
+    <figure class="figure-block">
+      <img src="./outputs/figures/shap_summary_bar.png" alt="SHAP summary bar">
+      <figcaption>Mean absolute SHAP values across the test set. Higher = more influence on the model's prediction.</figcaption>
+    </figure>
+    <figure class="figure-block">
+      <img src="./outputs/figures/shap_beeswarm.png" alt="SHAP beeswarm">
+      <figcaption>Beeswarm plot showing direction and spread of each feature's effect. Red = high feature value, blue = low.</figcaption>
+    </figure>
+    <figure class="figure-block">
+      <img src="./outputs/figures/shap_dependence_percent_fsm.png" alt="FSM dependence">
+      <figcaption>FSM dependence plot. Higher FSM rates consistently drive large positive SHAP contributions — more absence.</figcaption>
+    </figure>
+    <figure class="figure-block">
+      <img src="./outputs/figures/shap_dependence_year_numeric.png" alt="Year dependence">
+      <figcaption>Year dependence coloured by IMD score. The post-COVID shift is uniform across deprivation levels — no gradient.</figcaption>
+    </figure>
+    <figure class="figure-block">
+      <img src="./outputs/figures/shap_dependence_phase_numeric.png" alt="Phase dependence">
+      <figcaption>Secondary schools (phase=2) receive consistently higher SHAP contributions than primary schools.</figcaption>
+    </figure>
+    <figure class="figure-block">
+      <img src="./outputs/figures/shap_dependence_imd_score.png" alt="IMD dependence">
+      <figcaption>IMD has a weak, noisy relationship with absence once FSM, year and phase are accounted for.</figcaption>
+    </figure>
+  </div>
+</div>
+
+<!-- FINDINGS -->
+<div class="body-wrap">
+  <div class="section-head">Key findings</div>
+  <h2>What the model tells us</h2>
+
+  <ul class="findings">
+    <li><strong>Target pupils, not postcodes.</strong> FSM eligibility (39.7% importance) is already an administrative flag held by every school and local authority. Using it directly to prioritise attendance outreach is more precise than area-level IMD targeting.</li>
+    <li><strong>Absence has not returned to pre-pandemic levels.</strong> SHAP values for 2022–23 and 2023–24 remain positive (higher than average), meaning the pandemic's effect on attendance norms has not fully unwound four years later.</li>
+    <li><strong>Secondary schools need different levers.</strong> Phase is the third most important feature (20.9%). The absence gap between primary and secondary is structural and independent of deprivation — it cannot be attributed to higher FSM rates in secondary schools alone.</li>
+    <li><strong>A universal recovery programme would have been more efficient than a targeted one.</strong> Because the COVID shock was deprivation-neutral, channelling recovery funds through deprivation criteria would have left many high-absence schools out of scope.</li>
+    <li><strong>Non-linear interactions matter.</strong> The Random Forest outperforms OLS by 11 percentage points of R² (0.597 vs 0.486) because it captures year × phase and year × FSM interactions that OLS models linearly and therefore misses.</li>
+  </ul>
+
+  <div class="section-head">Data &amp; method</div>
+  <h2>Feature importances in full</h2>
+  <table>
+    <thead><tr><th>Feature</th><th>Importance</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td>percent_fsm</td><td><strong>0.397</strong></td><td>% pupils eligible for Free School Meals</td></tr>
+      <tr><td>year_numeric</td><td><strong>0.298</strong></td><td>Academic year encoded 0–5 (captures COVID break)</td></tr>
+      <tr><td>phase_numeric</td><td><strong>0.209</strong></td><td>1=Primary, 2=Secondary, 3=All-through</td></tr>
+      <tr><td>log_pupils</td><td>0.044</td><td>Log-transformed school roll</td></tr>
+      <tr><td>imd_score</td><td>0.021</td><td>IMD 2019 area deprivation score</td></tr>
+      <tr><td>region_London</td><td>0.013</td><td>London region dummy</td></tr>
+      <tr><td>All other regions + urban flag</td><td>0.018</td><td>—</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<footer>
+  <p>Data sources: DfE Explore Education Statistics (absence, 2018–19 to 2023–24) · Get Information About Schools (GIAS) · Index of Multiple Deprivation 2019 (MHCLG File 7) · ONS Postcode Directory (Nov 2023). Analysis pipeline: scikit-learn (Random Forest, GridSearchCV, GroupKFold), SHAP TreeExplainer, statsmodels OLS. Years 2019–20 and 2020–21 excluded — DfE did not publish school-level absence data during COVID school closures.</p>
+</footer>
 
 <script>
-// Feature importances chart
 const featCtx = document.getElementById('featChart').getContext('2d');
 new Chart(featCtx, {
   type: 'bar',
   data: {
-    labels: ['percent_fsm', 'year_numeric', 'phase_numeric', 'log_pupils', 'imd_score', 'region_London', 'Other'],
-    datasets: [{
-      label: 'Feature Importance',
-      data: [0.397, 0.298, 0.209, 0.044, 0.021, 0.013, 0.018],
-      backgroundColor: ['#0f3460','#1a5276','#2471a3','#5dade2','#a9cce3','#d6eaf8','#e8f4fd'],
-      borderRadius: 4
-    }]
+    labels: ['% Free School Meals', 'Year (COVID effect)', 'School phase', 'School size (log)', 'IMD score', 'Region: London', 'Other'],
+    datasets: [{ data: [0.397, 0.298, 0.209, 0.044, 0.021, 0.013, 0.018], backgroundColor: '#1a5276', borderRadius: 2 }]
   },
   options: {
-    indexAxis: 'y',
-    responsive: true, maintainAspectRatio: false,
+    indexAxis: 'y', responsive: true,
     plugins: { legend: { display: false } },
     scales: {
-      x: { grid: { color: '#f0f0f0' }, ticks: { callback: v => (v*100).toFixed(0)+'%' } },
-      y: { grid: { display: false } }
+      x: { grid: { color: '#f0f0f0' }, ticks: { callback: v => (v*100).toFixed(0)+'%', font: { family: 'Inter', size: 11 } }, border: { display: false } },
+      y: { grid: { display: false }, ticks: { font: { family: 'Inter', size: 11 } }, border: { display: false } }
     }
   }
 });
 
-// Model comparison chart
 const modelCtx = document.getElementById('modelChart').getContext('2d');
 new Chart(modelCtx, {
   type: 'bar',
   data: {
     labels: ['OLS Baseline', 'Random Forest'],
     datasets: [
-      {
-        label: 'Test R²',
-        data: [0.486, 0.597],
-        backgroundColor: ['#d6eaf8','#0f3460'],
-        borderRadius: 4,
-        yAxisID: 'y1'
-      },
-      {
-        label: 'RMSE',
-        data: [6.446, 5.706],
-        backgroundColor: ['#fadbd8','#e63946'],
-        borderRadius: 4,
-        yAxisID: 'y2'
-      }
+      { label: 'Test R²', data: [0.486, 0.597], backgroundColor: ['#aac4dd', '#1a5276'], borderRadius: 2, yAxisID: 'y1' },
+      { label: 'Test RMSE', data: [6.446, 5.706], backgroundColor: ['#f5cba7', '#ca6f1e'], borderRadius: 2, yAxisID: 'y2' }
     ]
   },
   options: {
-    responsive: true, maintainAspectRatio: false,
-    plugins: { legend: { position: 'top', labels: { boxWidth: 12 } } },
+    responsive: true,
+    plugins: { legend: { position: 'top', labels: { font: { family: 'Inter', size: 11 }, boxWidth: 10 } } },
     scales: {
-      y1: { type: 'linear', position: 'left', title: { display: true, text: 'R²' }, grid: { color: '#f0f0f0' }, min: 0, max: 0.8 },
-      y2: { type: 'linear', position: 'right', title: { display: true, text: 'RMSE' }, grid: { display: false }, min: 0, max: 8 }
+      y1: { position: 'left', title: { display: true, text: 'R²', font: { family: 'Inter', size: 11 } }, grid: { color: '#f0f0f0' }, min: 0, max: 0.8, border: { display: false } },
+      y2: { position: 'right', title: { display: true, text: 'RMSE', font: { family: 'Inter', size: 11 } }, grid: { display: false }, min: 0, max: 9, border: { display: false } }
     }
   }
 });
