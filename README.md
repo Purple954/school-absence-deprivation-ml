@@ -1,6 +1,6 @@
 # School Absence and Deprivation — ML Analysis
 
-**[View Dashboard](./dashboard.html)**
+**[View Dashboard](https://Purple954.github.io/school-absence-deprivation-ml/dashboard.html)**
 
 Persistent absence from school is one of the clearest early indicators of later educational disengagement, but the structural factors driving it are often treated as background noise rather than the main story. This project builds a machine learning pipeline on open DfE data to identify which school-level and area-level characteristics are most predictive of high absence rates — and uses explainability tools to make the model findings actionable.
 
