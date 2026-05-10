@@ -1,0 +1,14 @@
+data/raw/
+data/processed/
+models/
+outputs/X_test.csv
+outputs/y_test.csv
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+.env
+*.egg-info/
+.ipynb_checkpoints/
+*.pkl
+*.joblib
