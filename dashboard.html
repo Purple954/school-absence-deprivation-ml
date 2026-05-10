@@ -156,23 +156,23 @@
 
 <header>
   <div class="kicker">Data Analysis</div>
-  <h1>Poverty, not place, predicts which children miss school</h1>
-  <p class="deck">A four-year machine learning analysis of persistent absence in English state schools finds that Free School Meals eligibility — a direct measure of pupil poverty — outperforms area deprivation as a predictor by a factor of nineteen to one.</p>
+  <h1>Pupil poverty predicts which children miss school. Area deprivation is a much weaker signal.</h1>
+  <p class="deck">A four-year machine learning analysis of persistent absence in English state schools finds that Free School Meals eligibility outperforms area deprivation as a predictor by a factor of nineteen to one.</p>
   <div class="byline">Data: <span>DfE Absence Statistics · GIAS · IMD 2019 · ONS Postcode Directory</span> &nbsp;·&nbsp; Method: <span>Random Forest · SHAP · Spatial GroupKFold CV</span></div>
 </header>
 
 <div class="body-wrap">
 
   <div class="section-head">The finding</div>
-  <h2>The COVID attendance crisis hit every school equally — regardless of how deprived their neighbourhood was</h2>
+  <h2>The COVID attendance crisis hit every school equally, regardless of how deprived their neighbourhood was</h2>
 
-  <p>Persistent absence — missing at least 10% of possible school sessions — has long been treated as a proxy for disadvantage. The assumption is that it clusters in deprived areas, and that area-level interventions can reach the pupils most at risk. This analysis, covering roughly 79,000 school-year observations across four academic years, tests that assumption directly.</p>
+  <p>Persistent absence, missing at least 10% of possible school sessions, has long been treated as a proxy for disadvantage. The assumption is that it clusters in deprived areas, and that area-level interventions can reach the pupils most at risk. This analysis, covering roughly 79,000 school-year observations across four academic years, tests that assumption directly.</p>
 
-  <p>The model finds something more precise. Free School Meals eligibility, an individual-level flag already held by every local authority and school, is nineteen times more predictive of absence rates than the Index of Multiple Deprivation score of the area a school sits in. Area deprivation is real, but it is a blunt instrument.</p>
+  <p>Free School Meals eligibility is nineteen times more predictive of absence rates than the Index of Multiple Deprivation score of the area a school sits in. Area deprivation is real but it is a blunt instrument, and the model makes that gap visible.</p>
 
-  <blockquote>"The COVID attendance shock was not disproportionately concentrated in deprived schools. It was uniform across the deprivation distribution."</blockquote>
+  <blockquote></blockquote>
 
-  <p>The second major finding concerns time. The year a school year falls in is the second strongest predictor in the model — not because school years inherently differ, but because the COVID-19 pandemic caused a structural break in attendance norms that is still visible in 2023–24 data. And when the SHAP dependence plots are coloured by deprivation level, the shock is flat across that spectrum. The pandemic was an equal-opportunity disruptor.</p>
+  <p>The year a school year falls in is the second strongest predictor in the model. Not because school years inherently differ, but because COVID-19 caused a structural break in attendance norms that is still visible in 2023-24 data. When the SHAP dependence plots are split by deprivation level, the shock is flat across that spectrum. The pandemic hit every school at roughly the same magnitude.</p>
 
 </div>
 
@@ -199,9 +199,9 @@
   <div class="section-head">The model</div>
   <div class="chart-row">
     <div class="chart-block">
-      <h3>What drives absence — feature importances</h3>
+      <h3>What drives absence</h3>
       <canvas id="featChart" height="260"></canvas>
-      <p class="chart-caption">Random Forest feature importances. Scores sum to 1. Model trained on ~79,000 school-year observations, split by school URN to prevent leakage.</p>
+      <p class="chart-caption">Random Forest feature importances, trained on roughly 79,000 school-year observations split by school URN to prevent leakage.</p>
     </div>
     <div class="chart-block">
       <h3>Random Forest vs OLS baseline</h3>
@@ -248,11 +248,11 @@
   <h2>What the model tells us</h2>
 
   <ul class="findings">
-    <li><strong>Target pupils, not postcodes.</strong> FSM eligibility (39.7% importance) is already an administrative flag held by every school and local authority. Using it directly to prioritise attendance outreach is more precise than area-level IMD targeting.</li>
-    <li><strong>Absence has not returned to pre-pandemic levels.</strong> SHAP values for 2022–23 and 2023–24 remain positive (higher than average), meaning the pandemic's effect on attendance norms has not fully unwound four years later.</li>
-    <li><strong>Secondary schools need different levers.</strong> Phase is the third most important feature (20.9%). The absence gap between primary and secondary is structural and independent of deprivation — it cannot be attributed to higher FSM rates in secondary schools alone.</li>
-    <li><strong>A universal recovery programme would have been more efficient than a targeted one.</strong> Because the COVID shock was deprivation-neutral, channelling recovery funds through deprivation criteria would have left many high-absence schools out of scope.</li>
-    <li><strong>Non-linear interactions matter.</strong> The Random Forest outperforms OLS by 11 percentage points of R² (0.597 vs 0.486) because it captures year × phase and year × FSM interactions that OLS models linearly and therefore misses.</li>
+    <li>FSM eligibility (39.7% importance) is already an administrative flag held by every school and local authority. Using it directly to prioritise attendance outreach will reach higher-risk pupils more reliably than area-level IMD targeting.</li>
+    <li>SHAP values for 2022-23 and 2023-24 remain positive, meaning the pandemic's effect on attendance norms has not fully unwound four years later.</li>
+    <li>Phase is the third most important feature (20.9%). The absence gap between primary and secondary is structural and independent of deprivation. It cannot be attributed to higher FSM rates in secondary schools alone.</li>
+    <li>Because the COVID shock was deprivation-neutral, channelling recovery funds through deprivation criteria would have left many high-absence schools out of scope. A universal programme would have had broader reach.</li>
+    <li>The Random Forest outperforms OLS by 11 percentage points of R² (0.597 vs 0.486) because it captures year × phase and year × FSM interactions that a linear model misses.</li>
   </ul>
 
   <div class="section-head">Data &amp; method</div>
